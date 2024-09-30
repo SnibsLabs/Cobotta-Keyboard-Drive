@@ -1,5 +1,5 @@
 # Cobotta-Keyboard-Drive
-This repository is for displaying a python implementation for keyboard controls with the Denso Cobotta robot.
+This repository is for displaying a Python implementation for keyboard controls with the Denso Cobotta robot.
 
 The robot can be controlled via the keyboard while pressing down SHIFT:
 "W": +X, "S": -X, 
