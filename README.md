@@ -9,7 +9,7 @@ The robot can be controlled via the keyboard while pressing down SHIFT:
 "C": +Ry, "V": -Ry, 
 "F": +Rz, "G": -Rz.
 
-The graphical UI can be used to limit allowed axis, start and stop communication with the robot. To run this program, excexute the main.py.
+The graphical UI can be used to limit allowed axis, start and stop communication with the robot. To run this program, execute the main.py.
 
 ![Graphical UI](img/GUI.png)
 
