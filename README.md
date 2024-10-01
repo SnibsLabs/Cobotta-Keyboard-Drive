@@ -15,3 +15,6 @@ The graphical UI can be used to limit allowed axis, start and stop communication
 
 This version is using the pyrobot class provided by Shohei Kobata:
 https://github.com/ShoheiKobata/orin_bcap_python_samples/tree/master/3DMouse_Controll
+
+Bcap communication library:
+https://github.com/DENSORobot/orin_bcap
