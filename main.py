@@ -199,6 +199,7 @@ class Application(tk.Frame):
 
     def btn_fnc(self, flg=False):
         if flg:
+            self.rob.startposition()
             self.rob.standby_on()
             self.start_btn['state'] = 'disable'
             self.stop_btn['state'] = 'normal'

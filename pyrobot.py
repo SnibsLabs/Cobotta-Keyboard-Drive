@@ -14,6 +14,7 @@ Built on a sample program that used a 3D mouse to control XYZ+rotation and repro
 
 import os
 import sys
+
 import traceback
 from pybcapclient.bcapclient import BCAPClient
 from pybcapclient.orinexception import ORiNException
@@ -231,13 +232,60 @@ class Robot():
         except Exception as e:
             self._error_handling(e)
 
-    def err_func(self):
+    def tester_func(self):
         try:
-            h_int = self.bcap.controller_getvariable(self.h_ctrl, 'I1')
-            self.bcap.variable_putvalue(h_int, [0, 0, 90, 0, 90, 0])
+            h_int = self.bcap.controller_getvariable(self.h_ctrl, 'I3')
+            self.bcap.variable_putvalue(h_int, 90)
         except Exception as e:
             self._error_handling(e)
     # End def
+    def taskman(self, nimi, numero): # ajetaan mainista kahdesti? Ei välttämättä
+        # Controller get pac script names
+        # If contains "nimi" excecute
+        HTask = 0
+        HTask = self.bcap.controller_gettask(self.h_ctrl, nimi, numero)
+        #self.bcap.controller_execute(self.h_ctrl, 'SysInfo', 0)
+        # Start pro1.pcs in RC8
+        # mode  1:One cycle execution, 2:Continuous execution, 3:Step forward
+        mode = 1
+        #hr = 
+        self.bcap.task_start(HTask, mode, "")  
+        return  HTask
+
+
+    # Kysele parin sekunnin välein ollaanko törmätty
+
+    def establish_col_variable(self):
+        variable_storage = self.bcap.controller_getvariable(self.h_ctrl, 'I1')
+        return variable_storage
+
+    def collision_police(self, variable_storage):
+        #variable_storage = self.bcap.controller_getvariable(self.h_ctrl, 'I1')
+        h_int = self.bcap.variable_getvalue(variable_storage)
+        return h_int 
+        #Tässäkin pitäis tietysti olla try catch, logiikan voi kirjoittaa pääohjelmaan, ja loop voisi olla myös timer funktiossa
+
+    def release_variable(self, variable):
+        # Disconnect
+        if(variable != 0):
+            self.bcap.variable_release(variable)
+            print("Released variable ",variable)
+
+    def startposition(self):
+        self.bcap.robot_execute(self.h_rob, "TakeArm")
+        self.bcap.robot_execute(self.h_rob, "ExtSpeed", 75)
+        self.bcap.robot_move(self.h_rob, 1, "@P J(0,0,90,0,90,0)") #kolmanneksi viimeinen oli 0 tai 20, nyt 90.
+        self.bcap.robot_execute(self.h_rob, "GiveArm", None) #TODO Lisää motor off
+        self.bcap.robot_execute(self.h_rob, 'GiveArm')
+        self.bcap.robot_execute(self.h_rob, 'Motor', [0, 0])
+
+    # Lopeta taskit
+
+    def stoppingTask(self, nimi):
+        mode = 1
+        #hr = 
+        self.bcap.task_stop(nimi, mode, "")
+        print("task stop")
 
     def disconnect(self):
         """disconnect controller and bcap service
@@ -312,58 +360,59 @@ class Robot():
     # End def
 # End class
 
-def set_executable_token(self, token='Ethernet'): #ALSO COMPLETELY NEW
-    """Set the executable token for the controller
-    Args:
-        token (str): The token to set (default is 'Ethernet')
-    """
-    try:
-        self.bcap.controller_execute(self.h_ctrl, 'SetExToken', [token])
-        self._logger.info(f"Set executable token to {token}.")
-    except Exception as e:
-        self._error_handling(e)
+    def set_executable_token(self, token='Ethernet'): #ALSO COMPLETELY NEW
+        """Set the executable token for the controller
+        Args:
+            token (str): The token to set (default is 'Ethernet')
+        """
+        try:
+            self.bcap.controller_execute(self.h_ctrl, 'SetExToken', [token])
+            self._logger.info(f"Set executable token to {token}.")
+        except Exception as e:
+            self._error_handling(e)
 
-def reconnect(self):
-    """Reconnect to the robot controller and execute necessary initializations
-    Args:
-        None
-    Returns:
-        None
-    """
-    if self.bcap is None:
-        self._logger.error("BCAP client is not initialized.")
-        return
+    def reconnect_robotto(self):
+        """Reconnect to the robot controller and execute necessary initializations
+        Args:
+            None
+        Returns:
+            None
+        """
+        if self.bcap is None:
+            self._logger.error("BCAP client is not initialized.")
+            return
 
-    try:
-        self.connect()
-        self.execute_calset()
-        #self.set_executable_token()
-        self.standby_on()
-    except ORiNException as e:
-        self._logger.error(f"ORiNException: {e}")
-        self._error_handling(e)
-    except Exception as e:
-        self._error_handling(e)
+        try:
+            self.connect()
+            self.execute_calset()
+            #self.set_executable_token()
+            self.standby_on()
+        except ORiNException as e:
+            self._logger.error(f"ORiNException: {e}")
+            self._error_handling(e)
+        except Exception as e:
+            self._error_handling(e)
 
-def execute_calset(self):
-    """Execute CALSET on the robot controller
-    Args:
-        None
-    Returns:
-        None
-    """
-    if self.bcap is None:
-        self._logger.error("BCAP client is not initialized.")
-        return
+    def execute_calset(self):
+        """Execute CALSET on the robot controller
+        Args:
+            None
+        Returns:
+            None
+        """
+        if self.bcap is None:
+            self._logger.error("BCAP client is not initialized.")
+            return
 
-    try:
-        self.bcap.controller_execute(self.h_ctrl, 'CALSET')
-        self._logger.info("Executed CALSET successfully.")
-    except ORiNException as e:
-        self._logger.error(f"ORiNException: {e}")
-        self._error_handling(e)
-    except Exception as e:
-        self._error_handling(e)
+        try:
+            self.bcap.robot_execute(self.h_rob, "AutoCal", "")
+            #self.bcap.controller_execute(self.h_ctrl, 'CALSET')
+            self._logger.info("Executed CALSET successfully.")
+        except ORiNException as e:
+            self._logger.error(f"ORiNException: {e}")
+            self._error_handling(e)
+        except Exception as e:
+            self._error_handling(e)
 
 
 def main():
@@ -375,7 +424,7 @@ def main():
     connected = rob.connect(ip='127.0.0.1', rc_type='RC8', name='sample')
     if connected:
         rob.clear_errors()  # Ensure any existing errors are cleared
-        rob.reconnect()
+        rob.reconnect_robotto()
         #rob.set_executable_token()  # Set the executable token to Ethernet
         rob.standby_on()
         info = rob.get_base_info()
